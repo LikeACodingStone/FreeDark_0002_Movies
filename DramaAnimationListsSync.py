@@ -55,7 +55,7 @@ if not, move to the next line.
 |-----|-----|----|----|----|
 '
 there are five items, if the five items is full, then move the cursor to the next line.
-
+6.这是电视剧和动漫的生成数据的列表，但是似乎OMDB这个平台已经不适用，请更换其他平台
 give me the whole code fixed.
 '''
 
@@ -70,7 +70,6 @@ MOVIES_DIR = os.path.join(BASE_DIR, "drama_animations")
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-OMDB_KEY = "d79c78b4"
 TMDB_KEY = "642c02f606f93ef3b7f179994752f663"
 
 
@@ -93,7 +92,7 @@ def save_movies(left):
 
 def scan_files():
     files = sorted(os.listdir(MOVIES_DIR))
-    print("\n📂 Movie lists:\n")
+    print("\n📂 Lists:\n")
     for f in files:
         print(f)
     return files
@@ -136,31 +135,38 @@ def wiki_en(title):
     return None
 
 
-# ---------------- APIs ----------------
+# ---------------- TMDB (movies + animation) ----------------
 
-def omdb(name):
+def tmdb_movie(name):
     try:
         r = requests.get(
-            f"http://www.omdbapi.com/?apikey={OMDB_KEY}&t={name}",
-            timeout=10
-        )
-        j = r.json()
-        if j.get("Response") == "True":
-            return j
-    except:
-        pass
-    return None
-
-
-def tmdb(name):
-    try:
-        r = requests.get(
-            f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_KEY}&query={name}",
+            f"https://api.themoviedb.org/3/search/multi?api_key={TMDB_KEY}&query={name}",
             timeout=10
         )
         j = r.json()
         if j["results"]:
             return j["results"][0]
+    except:
+        pass
+    return None
+
+
+# ---------------- TVMaze (drama/anime king) ----------------
+
+def tvmaze(name):
+    try:
+        r = requests.get(
+            f"https://api.tvmaze.com/search/shows?q={name}",
+            timeout=10
+        )
+        j = r.json()
+        if j:
+            show = j[0]["show"]
+            return {
+                "year": show.get("premiered", "")[:4],
+                "rate": show.get("rating", {}).get("average"),
+                "intro": re.sub("<.*?>", "", show.get("summary", ""))
+            }
     except:
         pass
     return None
@@ -185,22 +191,32 @@ def summarize(text):
     return english_summary(text)
 
 
-# ---------------- Movie Info ----------------
+# ---------------- Movie Info Core ----------------
 
 def get_movie_info(name):
-    intro = wiki_cn(name) or wiki_en(name)
+    intro = wiki_cn(name)
 
-    api = omdb(name) or tmdb(name)
+    tv = tvmaze(name)
+
+    tmdb = tmdb_movie(name)
 
     year = ""
     rate = ""
 
-    if api:
-        year = api.get("Year") or api.get("release_date", "")[:4]
-        rate = api.get("imdbRating") or api.get("vote_average")
-
+    if tv:
+        year = tv["year"]
+        rate = tv["rate"]
         if not intro:
-            intro = api.get("Plot") or api.get("overview")
+            intro = tv["intro"]
+
+    if tmdb:
+        year = year or tmdb.get("release_date", "")[:4] or tmdb.get("first_air_date", "")[:4]
+        rate = rate or tmdb.get("vote_average")
+        if not intro:
+            intro = tmdb.get("overview")
+
+    if not intro:
+        intro = wiki_en(name)
 
     intro = summarize(intro)
 
@@ -210,7 +226,7 @@ def get_movie_info(name):
     return year, rate, intro
 
 
-# ---------------- File Writing ----------------
+# ---------------- Cursor Fix ----------------
 
 def ensure_newline_end(f):
     f.seek(0, os.SEEK_END)
@@ -221,7 +237,7 @@ def ensure_newline_end(f):
         f.write("\n")
 
 
-# ----- special 00 logic (5 columns wrap) -----
+# ---------------- 00 Table (5 columns wrap) ----------------
 
 def append_simple(file_path, movie):
     with open(file_path, "r+", encoding="utf-8") as f:
@@ -230,25 +246,26 @@ def append_simple(file_path, movie):
         if len(lines) < 3:
             lines.append("")
 
-        last_row = lines[-1]
+        last = lines[-1]
+        if not last.startswith("|"):
+            last = ""
 
-        if not last_row.startswith("|"):
-            last_row = ""
-
-        items = [i for i in last_row.split("|") if i]
+        items = [i for i in last.split("|") if i]
 
         if len(items) >= 5:
             lines.append(f"|{movie}|")
         else:
-            if last_row == "":
-                lines[-1] = f"|{movie}|"
+            if last:
+                lines[-1] = last + f"{movie}|"
             else:
-                lines[-1] = last_row + f"{movie}|"
+                lines[-1] = f"|{movie}|"
 
         f.seek(0)
         f.write("\n".join(lines) + "\n")
         f.truncate()
 
+
+# ---------------- Normal Table ----------------
 
 def append_table(file_path, movie, year, rate, intro):
     with open(file_path, "a+", encoding="utf-8") as f:
@@ -265,7 +282,7 @@ def process_movie(movie):
     info = get_movie_info(movie)
 
     if not info:
-        print(f"❌ Failed: {movie}")
+        print(f"❌ No data: {movie}")
         return False
 
     year, rate, intro = info
@@ -279,12 +296,12 @@ def process_movie(movie):
     return True
 
 
-# ---------------- Main ----------------
+# ---------------- Main Loop ----------------
 
 def main():
     movies = load_movies()
     if not movies:
-        print("Movie list empty.")
+        print("List empty.")
         return
 
     failed = []
