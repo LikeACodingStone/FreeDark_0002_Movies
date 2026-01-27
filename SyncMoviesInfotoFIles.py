@@ -74,7 +74,7 @@ OMDB_KEY = "d79c78b4"
 TMDB_KEY = "642c02f606f93ef3b7f179994752f663"
 
 
-# ---------------- Load Movie List ----------------
+# ---------------- Movie List ----------------
 
 def load_movies():
     if not os.path.exists(LIST_FILE):
@@ -89,7 +89,7 @@ def save_movies(left):
             f.write(m + "\n")
 
 
-# ---------------- Folder Scan ----------------
+# ---------------- Folder ----------------
 
 def scan_files():
     files = sorted(os.listdir(MOVIES_DIR))
@@ -212,7 +212,7 @@ def get_movie_info(name):
 
 # ---------------- File Writing ----------------
 
-def ensure_newline(f):
+def ensure_newline_end(f):
     f.seek(0, os.SEEK_END)
     if f.tell() == 0:
         return
@@ -221,23 +221,38 @@ def ensure_newline(f):
         f.write("\n")
 
 
+# ----- special 00 logic (5 columns wrap) -----
+
 def append_simple(file_path, movie):
     with open(file_path, "r+", encoding="utf-8") as f:
-        content = f.read().rstrip()
+        lines = f.read().splitlines()
 
-        if not content.endswith("|"):
-            content += "|"
+        if len(lines) < 3:
+            lines.append("")
 
-        content += movie + "|\n"
+        last_row = lines[-1]
+
+        if not last_row.startswith("|"):
+            last_row = ""
+
+        items = [i for i in last_row.split("|") if i]
+
+        if len(items) >= 5:
+            lines.append(f"|{movie}|")
+        else:
+            if last_row == "":
+                lines[-1] = f"|{movie}|"
+            else:
+                lines[-1] = last_row + f"{movie}|"
 
         f.seek(0)
-        f.write(content)
+        f.write("\n".join(lines) + "\n")
         f.truncate()
 
 
 def append_table(file_path, movie, year, rate, intro):
     with open(file_path, "a+", encoding="utf-8") as f:
-        ensure_newline(f)
+        ensure_newline_end(f)
         f.write(f"| {movie} | {year} | {rate} | {intro} |\n")
 
 
