@@ -136,6 +136,11 @@ def wiki_en(title):
     return None
 
 
+def append_record_only(file_path, movie):
+    with open(file_path, "a+", encoding="utf-8") as f:
+        ensure_newline_end(f)
+        f.write(f"{movie}\n")
+
 # ---------------- APIs ----------------
 
 def omdb(name):
@@ -261,6 +266,14 @@ def append_table(file_path, movie, year, rate, intro):
 def process_movie(movie):
     files = scan_files()
     target, mode = select_file(files)
+
+    filename = os.path.basename(target)
+
+    # If updating record.md → name only
+    if filename.lower() == "record.md":
+        append_record_only(target, movie)
+        print(f"✅ Added to record only: {movie}")
+        return True
 
     info = get_movie_info(movie)
 

@@ -3,6 +3,4 @@
 |长安的荔枝|危险关系|穆赫兰道|大逃杀|高山下的花环|
 |第六感|死神来了|小岛惊魂|逃出绝命岛|惊魂记|
 |孤岛惊魂|黑暗侵袭|恐怖游轮|鬼水怪谈|咒怨|
-|雏菊 1966|
-| 致命诱惑 | 2015 | 5.0 | High School senior Mark Richards has never minded his overprotective widowed mother Tanya and is a good son to her as he prepares to go off to Princeton in the fall However when he comes under the sexual spell of |
-| 尖峰时刻 | 2021 | 5.0 |  |
+|雏菊 1966|致命诱惑|尖峰时刻|
