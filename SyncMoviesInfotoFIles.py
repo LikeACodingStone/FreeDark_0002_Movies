@@ -94,7 +94,36 @@ def ensure_newline_end(f):
         f.seek(f.tell() - 1)
         if f.read(1) != "\n": f.write("\n")
 
+# ----- 原封不动搬过来的 00 特殊处理逻辑 (5 columns wrap) -----
+def append_simple(file_path, movie):
+    with open(file_path, "r+", encoding="utf-8") as f:
+        lines = f.read().splitlines()
+
+        if len(lines) < 3:
+            lines.append("")
+
+        last_row = lines[-1]
+
+        if not last_row.startswith("|"):
+            last_row = ""
+
+        items = [i for i in last_row.split("|") if i]
+
+        if len(items) >= 5:
+            lines.append(f"|{movie}|")
+        else:
+            if last_row == "":
+                lines[-1] = f"|{movie}|"
+            else:
+                lines[-1] = last_row + f"{movie}|"
+
+        f.seek(0)
+        f.write("\n".join(lines) + "\n")
+        f.truncate()
+
 def process_movie(movie):
+    print(f"\n🎬 Current Movie: {movie}")
+    
     files = sorted(os.listdir(MOVIES_DIR))
     for f in files: print(f)
     prefix = input("\nSelect prefix (00/01/02...): ").strip()
@@ -102,6 +131,12 @@ def process_movie(movie):
     
     if not target: return False
     
+    # 🌟 搬过来的 00 判断逻辑：如果是00，不需要请求网络API，直接单电影名追加并返回
+    if prefix == "00":
+        append_simple(target, movie)
+        print(f"✅ Updated: {movie}")
+        return True
+        
     info = get_movie_info(movie)
     if not info: return False
     
