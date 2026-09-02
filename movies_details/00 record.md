@@ -13,4 +13,5 @@
 |终结者 (The Terminator)|最后的决斗 (The Last Duel)|黑夜传说 (Underworld)|坠落的审判 (Anatomy of a Fall)|后天 (The Day After Tomorrow)|
 |真实谎言 (True Lies)|危机13小时 (13 Hours: The Secret Soldiers of Benghazi)|金矿 (Gold)|彗星来的那一夜 (Coherence)|恐怖分子 (The Terrorizers)|
 |世界上最糟糕的人 (The Worst Person in the World)|伊尼舍林的报丧女妖 (The Banshees of Inisherin)|黑洞频率 (Frequency)|重庆森林 (Chungking Express)|默杀 (A Place Called Silence)|
-|走走停停 (Gold or Shit)|浪客剑心 (Rurouni Kenshin)|
+|走走停停 (Gold or Shit)|浪客剑心 (Rurouni Kenshin)|黑客帝国 (The Matrix)|少数派报告 (Minority Report)|甜蜜的生活 (La dolce vita)|
+|地心引力 (Gravity)|

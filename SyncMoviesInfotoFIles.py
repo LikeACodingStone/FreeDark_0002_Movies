@@ -636,6 +636,7 @@ def append_table(file_path: str, info: Dict[str, str]) -> None:
 
 def process_movie(movie: str) -> bool:
     files = sorted(name for name in os.listdir(MOVIES_DIR) if name.endswith(".md"))
+    print(f"\n当前处理电影: {movie}", flush=True)
     print("\n电影列表:")
     for name in files:
         print(name)
